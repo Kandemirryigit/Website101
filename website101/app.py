@@ -6,6 +6,9 @@ import os
 app = Flask(__name__)
 app.secret_key = 'gizli-anahtar-buraya'
 
+with app.app_context():
+    db.create_all()
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///urunler.db'
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
