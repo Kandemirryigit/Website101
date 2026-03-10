@@ -17,8 +17,6 @@ IZIN_VERILEN_VIDEO = {'mp4', 'mov', 'avi', 'webm'}
 
 db = SQLAlchemy(app)
 
-with app.app_context():
-    db.create_all()
 
 ADMIN_SIFRE = "admin123"
 
@@ -40,6 +38,10 @@ class UrunMedya(db.Model):
     urun_id = db.Column(db.Integer, db.ForeignKey('urun.id'), nullable=False)
     dosya_adi = db.Column(db.String(300), nullable=False)
     tur = db.Column(db.String(10))
+
+
+with app.app_context():
+    db.create_all()
 
 
 def dosya_uzantisi(dosya_adi):
