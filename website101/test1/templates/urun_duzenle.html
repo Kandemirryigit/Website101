@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏪</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ürün Düzenle</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Karla:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Karla', sans-serif; background: #f5f5f5; }
+  header { background: #1b4332; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+  header h1 { font-family: 'Bebas Neue'; font-size: 1.6rem; letter-spacing: 2px; color: #d4a017; }
+  header a { color: white; text-decoration: none; font-weight: 600; }
+  .form-kart { max-width: 600px; margin: 2.5rem auto; background: white; border-radius: 16px; padding: 2.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  h2 { font-family: 'Bebas Neue'; font-size: 1.8rem; letter-spacing: 2px; color: #e67e22; margin-bottom: 2rem; }
+  .alan { margin-bottom: 1.3rem; }
+  label { display: block; font-weight: 700; margin-bottom: 0.4rem; font-size: 0.9rem; color: #333; }
+  input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 0.8rem 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; font-family: 'Karla', sans-serif; transition: border 0.2s; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #52b788; }
+  textarea { min-height: 90px; resize: vertical; }
+  .dosya-alani { border: 2px dashed #c8e6c9; border-radius: 8px; padding: 1.2rem; text-align: center; cursor: pointer; background: #f1f8e9; }
+  .dosya-alani input { display: none; }
+  .butonlar { display: flex; gap: 1rem; margin-top: 2rem; }
+  .kaydet-btn { flex: 1; padding: 1rem; background: #e67e22; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; font-family: 'Karla', sans-serif; cursor: pointer; }
+  .kaydet-btn:hover { background: #d35400; }
+  .iptal-btn { padding: 1rem 1.5rem; background: #f5f5f5; color: #555; border: none; border-radius: 8px; font-weight: 700; font-family: 'Karla', sans-serif; cursor: pointer; text-decoration: none; display: flex; align-items: center; }
+  .medya-grid { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.5rem; }
+  .medya-item { position: relative; text-align: center; }
+  .medya-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #c8e6c9; }
+  .medya-video-thumb { width: 80px; height: 80px; background: #1b4332; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+  .sil-label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; margin-top: 0.3rem; cursor: pointer; color: #c00; justify-content: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>✏️ Ürün Düzenle</h1>
+  <a href="/admin/panel">← Panele Dön</a>
+</header>
+<div class="form-kart">
+  <h2>{{ urun.ad }}</h2>
+  <form method="POST" enctype="multipart/form-data">
+
+    <div class="alan">
+      <label>Ürün Adı</label>
+      <input type="text" name="ad" value="{{ urun.ad }}" required>
+    </div>
+
+    <div class="alan">
+      <label>Fiyat (TL)</label>
+      <input type="number" name="fiyat" value="{{ urun.fiyat }}" step="0.01" required>
+    </div>
+
+    <div class="alan">
+      <label>Kategori</label>
+      <select name="kategori">
+        <option value="">— Seçiniz —</option>
+        {% for k in ['Mobilya','Elektronik','Giyim','Kitap','Oyuncak','Mutfak','Dekorasyon','Kapı & Pencere','Hurda','Diğer'] %}
+        <option {% if urun.kategori == k %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="alan">
+      <label>Açıklama</label>
+      <textarea name="aciklama">{{ urun.aciklama or '' }}</textarea>
+    </div>
+
+    {% if urun.medyalar %}
+    <div class="alan">
+      <label>Mevcut Medyalar (silmek için işaretle)</label>
+      <div class="medya-grid">
+        {% for m in urun.medyalar %}
+        <div class="medya-item">
+          {% if m.tur == 'resim' %}
+            <img src="/static/uploads/images/{{ m.dosya_adi }}" alt="">
+          {% else %}
+            <div class="medya-video-thumb">🎥</div>
+          {% endif %}
+          <label class="sil-label">
+            <input type="checkbox" name="medya_sil" value="{{ m.id }}"> Sil
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="alan">
+      <label>Yeni Fotoğraf Ekle</label>
+      <div class="dosya-alani" onclick="document.getElementById('resim-input').click()">
+        <input type="file" id="resim-input" name="resimler" accept="image/*" multiple onchange="resimleriOnizle(this)">
+        <span style="color:#2d6a4f;font-weight:700;">📷 Fotoğraf Seç</span>
+        <small style="display:block;color:#888;font-size:0.8rem;margin-top:0.3rem">Birden fazla seçebilirsin</small>
+      </div>
+      <div id="resim-onizleme" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
+    </div>
+
+    <div class="alan">
+      <label>Yeni Video Ekle</label>
+      <div class="dosya-alani" onclick="document.getElementById('video-input').click()">
+        <input type="file" id="video-input" name="videolar" accept="video/*" multiple onchange="videolariOnizle(this)">
+        <span style="color:#2d6a4f;font-weight:700;">🎥 Video Seç</span>
+        <small style="display:block;color:#888;font-size:0.8rem;margin-top:0.3rem">Birden fazla seçebilirsin</small>
+      </div>
+      <div id="video-onizleme" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
+    </div>
+
+    <div class="butonlar">
+      <a href="/admin/panel" class="iptal-btn">İptal</a>
+      <button type="submit" class="kaydet-btn">💾 Güncelle</button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+function resimleriOnizle(input) {
+  const kutu = document.getElementById('resim-onizleme');
+  kutu.innerHTML = '';
+  Array.from(input.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const div = document.createElement('div');
+      div.innerHTML = `<img src="${e.target.result}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #52b788;">`;
+      kutu.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function videolariOnizle(input) {
+  const kutu = document.getElementById('video-onizleme');
+  kutu.innerHTML = '';
+  Array.from(input.files).forEach(file => {
+    const div = document.createElement('div');
+    div.innerHTML = `<div style="width:80px;height:80px;background:#1b4332;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #52b788;gap:4px;"><span style="font-size:1.5rem">🎥</span><span style="font-size:0.6rem;color:white;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px">${file.name}</span></div>`;
+    kutu.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
